@@ -4,7 +4,7 @@ This project is an attempt to learn penetration testing using a suite of open so
 
 The Raspberry Pi is an appealing testbed for pentesting due to its low cost, great community support, small form factor, and simple design. Open source support also appears to have matured to the point that many distros now provide upstream builds that're compatible with the Raspberry Pi.
 
-Fedora was chosen for this project because it uses mainline Linux kernels that're kept up to date. This is especially important for a platform like the Raspberry Pi which benefits from hardware support and enablement that's added in newer kernels. There's also the benefit of having the same conventions between 
+Fedora was chosen for this project because it uses mainline Linux kernels that're kept up to date. This is especially important for a platform like the Raspberry Pi which benefits from hardware support and enablement that's added in newer kernels. This project also depends on Fedora-specific tools (portability is important, but so is development time), including `dnf` and `fedora-arm-installer`.
 
 ## Hardware Prerequisites
 
@@ -65,4 +65,22 @@ sudo arm-image-installer --image=Fedora-Minimal-armhfp-26-1.5-sda.raw.xz \
 --target=rpi3 \
 --resizefs \
 --media=/dev/mmcblk0
+```
+
+### Step 5: Bootstrapping pentesting suite
+
+Fedora's DNF package manager supports custom install roots and specifying architectures. In this case, all relevant packages can be downloaded to DNF's cache stored on the microSD card.
+
+```bash
+sudo mkdir /mnt/pwniepi
+sudo mount /dev/mmcblk0 /mnt/pwniepi
+sudo dnf --downloadonly --forcearch=armv7hl --installroot /mnt/pwniepi groupinstall security-lab
+sudo dnf --downloadonly --forcearch=armv7hl --installroot /mnt/pwniepi update
+```
+
+Currently there's a bug where scripts fail when installing packages onto the microSD card, so booting the Raspberry Pi to complete the install process is the safest method.
+
+```bash
+sudo dnf install /var/cache/dnf/{fedora,updates}-*/packages/*.rpm
+sudo dnf clean packages
 ```
