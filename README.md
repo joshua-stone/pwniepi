@@ -1,10 +1,10 @@
 # Overview
 
-This project is an attempt to learn penetration testing using a suite of open source tools, with as few modifications as possible along with a low barrier of entry.
+This project is an attempt to learn penetration testing using a suite of open source tools.
 
 The Raspberry Pi is an appealing testbed for pentesting due to its low cost, great community support, small form factor, and simple design. Open source support also appears to have matured to the point that many distros now provide upstream builds that're compatible with the Raspberry Pi.
 
-I've chosen Fedora for this project because it uses mainline Linux kernels that're kept up to date. This is especially important for a platform like the Raspberry Pi which benefits from hardware support and enablement that's added in newer kernels.
+Fedora was chosen for this project because it uses mainline Linux kernels that're kept up to date. This is especially important for a platform like the Raspberry Pi which benefits from hardware support and enablement that's added in newer kernels. There's also the benefit of having the same conventions between 
 
 ## Hardware Prerequisites
 
@@ -12,13 +12,17 @@ I've chosen Fedora for this project because it uses mainline Linux kernels that'
 
 * 2.5A microUSB power supply
 
-* microSD card
+* microSD card that's >=8GB
+
+* HDMI monitor w/ cable
+
+* USB keyboard
 
 ## Installing Fedora
 
 ### Step 1: Downloading installer
 
-As of Fedora 25, there are official ARM builds that support the Raspberry Pi. First download [one of the images from the Fedora site](https://mirrors.syringanetworks.net/fedora/linux/releases/26/Spins/armhfp/images/).
+As of Fedora 26, there are official ARM builds that support the Raspberry Pi. First download [one of the images from the Fedora site](https://mirrors.syringanetworks.net/fedora/linux/releases/26/Spins/armhfp/images/).
 
 ```bash
 wget https://mirrors.syringanetworks.net/fedora/linux/releases/26/Spins/armhfp/images/Fedora-Minimal-armhfp-26-1.5-sda.raw.xz
@@ -35,4 +39,30 @@ gpg --verify Fedora-Spins-26-1.5-armhfp-CHECKSUM
 sha256sum --check --ignore-missing Fedora-Spins-26-1.5-armhfp-CHECKSUM 
 ```
 
+### Step 3: Generating SSH keys
 
+Having strong SSH keys is of utmost important for secure system access. Newer versions of ssh-keygen can use [Ed25519](https://ed25519.cr.yp.to/) which generates keys that have a complexity similar to 4096-bit RSA.
+
+```bash
+ssh-keygen -t ed25519 -a 100
+```
+
+If backwards compatibility with older systems is important, then RSA will work fine.
+
+```bash
+ssh-keygen -t rsa -b 4096 -o -a 100
+```
+
+### Step 4: Installing Fedora
+
+The easiest way to install Fedora onto a microSD card is with the fedora-arm-installer utility. The target MicroSD card should be available as `/dev/mmcblk0` and NOT mounted, which can be verified by running `lsblk`. 
+
+Be sure to verify that all filenames are correct before flashing the microSD card.
+
+```bash
+sudo arm-image-installer --image=Fedora-Minimal-armhfp-26-1.5-sda.raw.xz \
+--addkey="${HOME}/.ssh/id_ed25519.pub" \
+--target=rpi3 \
+--resizefs \
+--media=/dev/mmcblk0
+```
