@@ -110,3 +110,18 @@ SSH keys should also be copied from /root so non-root users can log in via SSH
 sudo cp -r /root/.ssh ~
 chown -R ${USER}:${USER} ~/.ssh
 ```
+
+Disabling password authentication and root login should now be safe, which should appear like so in `/etc/ssh/sshd_config`:
+
+```
+PubkeyAuthentication yes
+PasswordAuthentication no
+PermitRootLogin no
+```
+
+Now reload SSH.
+
+```bash
+sudo systemctl reload sshd
+```
+
