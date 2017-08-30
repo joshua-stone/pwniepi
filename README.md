@@ -125,3 +125,33 @@ Now reload SSH.
 sudo systemctl reload sshd
 ```
 
+Finally, disable SELinux so that OpenVAS can be configured, which should appear like so in /etc/selinux/config`:
+
+```
+SELINUX=disabled
+```
+
+Now reboot.
+
+```bash
+sudo reboot
+```
+
+## Configuring OpenVAS
+
+### Step 1: Set up Redis
+
+Redis must be listening on a Unix socket, so configure `/etc/redis.conf` to have these parameters:
+
+```
+port 0
+unixsocket /tmp/redis.sock
+unixsocketperm 700
+```
+
+Redis should be ready to start.
+
+```bash
+sudo systemctl enable redis
+sudo systemctl start redis
+```
