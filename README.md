@@ -67,21 +67,61 @@ sudo arm-image-installer --image=Fedora-Minimal-armhfp-26-1.5-sda.raw.xz \
 --media=/dev/mmcblk0
 ```
 
-### Step 5: Bootstrapping pentesting suite
+### Step 5: Enabling Wi-fi
 
-Fedora's DNF package manager supports custom install roots and specifying architectures. In this case, all relevant packages can be downloaded to DNF's cache stored on the microSD card.
+Fedora currently doesn't enable RPi3's wifi chip out of the box unless copying a specific text file.
 
 ```bash
 sudo mkdir /mnt/pwniepi
-sudo mount /dev/mmcblk0 /mnt/pwniepi
+sudo mount /dev/mmcblk0p4 /mnt/pwniepi
+sudo cp configs/lib/firmware/brcm/brcmfmac43430-sdio.txt /mnt/pwniepi/lib/firmware/brcm/brcmfmac43430-sdio.txt
+```
+
+### Step 6: Bootstrapping pentesting suite
+
+Fedora's DNF package manager supports custom install roots and specifying architectures. DNF also supports package groups, the most relevant being [security-lab](https://github.com/fabaff/fsl-test-bench/blob/master/fsl.yml). In this case, all relevant packages can be downloaded to DNF's cache stored on the microSD card.
+
+```bash
 sudo dnf --downloadonly --forcearch=armv7hl --installroot /mnt/pwniepi install @security-lab gnutls-utils openvas-manager openvas-gsa redis sqlite
 sudo dnf --downloadonly --forcearch=armv7hl --installroot /mnt/pwniepi update
 ```
 
-Currently there's a bug where scripts fail when installing packages onto the microSD card, so booting the Raspberry Pi to complete the install process is the safest method.
+Once finished, the microSD card can now be removed.
+
+```bash
+sudo umount /mnt/pwniepi
+sync
+```
+
+### Step 7: Booting the Raspberry Pi
+
+The microSD card should be ready to boot at this point, so insert it into the RPi3, connect an HDMI monitor and USB mouse, and plug in a power supply. In a moment there'll be a menu to configure root password, timezone, and user. Once everything is configured, a login shell should be available.
+
+Currently there's a bug where scripts fail when installing packages onto the mounted microSD card on a host system, so booting the Raspberry Pi to complete the install process is the safest method.
 
 ```bash
 sudo dnf install /var/cache/dnf/{fedora,updates}-*/packages/*.rpm
 sudo dnf clean packages
+```
+
+SSH keys should also be copied from `/root` so non-root users can log in via SSH
+
+```bash
+sudo cp -r /root/.ssh ~
+chown -R ${USER}:${USER} ~/.ssh
+```
+
+Disabling password authentication and root login should now be safe, which should appear like so in `/etc/ssh/sshd_config`:
+
+```
+PubkeyAuthentication yes
+PasswordAuthentication no
+PermitRootLogin no
+```
+
+Now reload SSH.
+
+```bash
+sudo systemctl reload sshd
 ```
 
