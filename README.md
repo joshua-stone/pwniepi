@@ -82,7 +82,7 @@ sudo cp configs/lib/firmware/brcm/brcmfmac43430-sdio.txt /mnt/pwniepi/lib/firmwa
 Fedora's DNF package manager supports custom install roots and specifying architectures. DNF also supports package groups, the most relevant being [security-lab](https://github.com/fabaff/fsl-test-bench/blob/master/fsl.yml). In this case, all relevant packages can be downloaded to DNF's cache stored on the microSD card.
 
 ```bash
-sudo dnf --downloadonly --forcearch=armv7hl --installroot /mnt/pwniepi install @security-lab bzip2 gnutls-utils openvas-manager openvas-gsa redis tar sqlite
+sudo dnf --downloadonly --forcearch=armv7hl --installroot /mnt/pwniepi install @security-lab alien bzip2 gnutls-utils mingw32-nsis openvas-manager openvas-gsa redis tar texlive-collection-latexextra sqlite
 sudo dnf --downloadonly --forcearch=armv7hl --installroot /mnt/pwniepi update
 ```
 
@@ -163,3 +163,60 @@ Ensure that OpenVAS keeps an up-to-date collection of NVTs.
 ```bash
 sudo greenbone-nvt-sync
 ```
+
+NVT signature checking isn't enabled by default, so enable it in `/etc/openvas/openvassd.conf`:
+
+```
+nasl_no_signature_check = no
+```
+
+```bash
+sudo mkdir -p /var/lib/openvas/openvasmd/gnupg
+sudo gpg --keyserver hkp://keys.gnupg.net --homedir=/etc/openvas/gnupg --recv-key 48DB4530
+```
+
+```bash
+sudo greenbone-certdata-sync
+sudo greenbone-scapdata-sync
+```
+
+```bash
+sudo openvassd
+sudo openvasmd --rebuild
+```
+
+### Step 3: Create an OpenVAS user
+
+OpenVAS needs an admin user, but first there should be a password policy set in `/etc/openvas/pwpolicy.conf` because there aren't any password restrictions set by default. Fortunately there are premade policy rules that can be uncommented:
+
+```bash
+# +desc: Too short (at least 8 characters are required)
+!/^.{8,}$/
+```
+
+Once a password policy is set, create an admin user.
+
+```bash
+sudo openvasmd --create-user=<name> --role=Admin
+sudo openvasmd --user=<name> --new-password=<password>
+```
+
+### Step 5: Starting the OpenVAS manager and assistant
+
+The OpenVAS Manager is a core component that acts as a layer between OpenVAS Scanner and clients, while Greenbone Security Assistant provides a web interface that connects to OpenVAS Manager.
+
+```bash
+sudo openvas-manage-certs -a
+sudo openvasmd
+sudo gsad
+```
+
+### Step 4: Checking OpenVAS setup
+
+There should be a working OpenVAS setup at this point.
+
+```bash
+sudo openvas-check-setup --v9
+```
+
+If everything looks good, then there
