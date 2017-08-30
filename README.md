@@ -12,7 +12,7 @@ Fedora was chosen for this project because it uses mainline Linux kernels that'r
 
 * 2.5A microUSB power supply
 
-* microSD card that's >=8GB
+* >=16GB microSD
 
 * HDMI monitor w/ cable
 
@@ -69,7 +69,7 @@ sudo arm-image-installer --image=Fedora-Minimal-armhfp-26-1.5-sda.raw.xz \
 
 ### Step 5: Enabling Wi-fi
 
-Fedora currently doesn't support the RPi3's wifi chip out of the box. Fortunately this can be fixed by copying a text file.
+Fedora currently doesn't enable RPi3's wifi chip out of the box unless copying a specific text file.
 
 ```bash
 sudo mkdir /mnt/pwniepi
@@ -82,7 +82,7 @@ sudo cp configs/lib/firmware/brcm/brcmfmac43430-sdio.txt /mnt/pwniepi/lib/firmwa
 Fedora's DNF package manager supports custom install roots and specifying architectures. DNF also supports package groups, the most relevant being [security-lab](https://github.com/fabaff/fsl-test-bench/blob/master/fsl.yml). In this case, all relevant packages can be downloaded to DNF's cache stored on the microSD card.
 
 ```bash
-sudo dnf --downloadonly --forcearch=armv7hl --installroot /mnt/pwniepi groupinstall security-lab
+sudo dnf --downloadonly --forcearch=armv7hl --installroot /mnt/pwniepi install @security-lab alien bzip2 gnutls-utils mingw32-nsis openvas-manager openvas-gsa redis tar texlive-collection-latexextra sqlite
 sudo dnf --downloadonly --forcearch=armv7hl --installroot /mnt/pwniepi update
 ```
 
@@ -104,7 +104,7 @@ sudo dnf install /var/cache/dnf/{fedora,updates}-*/packages/*.rpm
 sudo dnf clean packages
 ```
 
-SSH keys should also be copied from /root so non-root users can log in via SSH
+SSH keys should also be copied from `/root` so non-root users can log in via SSH
 
 ```bash
 sudo cp -r /root/.ssh ~
@@ -125,3 +125,98 @@ Now reload SSH.
 sudo systemctl reload sshd
 ```
 
+Finally, disable SELinux so that OpenVAS can be configured, which should appear like so in `/etc/selinux/config`:
+
+```
+SELINUX=disabled
+```
+
+Now reboot.
+
+```bash
+sudo reboot
+```
+
+## Configuring OpenVAS
+
+### Step 1: Set up Redis
+
+Redis must be listening on a Unix socket, so configure `/etc/redis.conf` to have these parameters:
+
+```
+port 0
+unixsocket /tmp/redis.sock
+unixsocketperm 700
+```
+
+Redis should be ready to start.
+
+```bash
+sudo systemctl enable redis
+sudo systemctl start redis
+```
+
+### Step 2: Update OpenVAS network vulnerability tests
+
+Ensure that OpenVAS keeps an up-to-date collection of NVTs.
+
+```bash
+sudo greenbone-nvt-sync
+```
+
+NVT signature checking isn't enabled by default, so enable it in `/etc/openvas/openvassd.conf`:
+
+```
+nasl_no_signature_check = no
+```
+
+```bash
+sudo mkdir -p /var/lib/openvas/openvasmd/gnupg
+sudo gpg --keyserver hkp://keys.gnupg.net --homedir=/etc/openvas/gnupg --recv-key 48DB4530
+```
+
+```bash
+sudo greenbone-certdata-sync
+sudo greenbone-scapdata-sync
+```
+
+```bash
+sudo openvassd
+sudo openvasmd --rebuild
+```
+
+### Step 3: Create an OpenVAS user
+
+OpenVAS needs an admin user, but first there should be a password policy set in `/etc/openvas/pwpolicy.conf` because there aren't any password restrictions set by default. Fortunately there are premade policy rules that can be uncommented:
+
+```bash
+# +desc: Too short (at least 8 characters are required)
+!/^.{8,}$/
+```
+
+Once a password policy is set, create an admin user.
+
+```bash
+sudo openvasmd --create-user=<name> --role=Admin
+sudo openvasmd --user=<name> --new-password=<password>
+```
+
+### Step 5: Starting the OpenVAS manager and assistant
+
+The OpenVAS Manager is a core component that acts as a layer between OpenVAS Scanner and clients, while Greenbone Security Assistant provides a web interface that connects to OpenVAS Manager.
+
+```bash
+sudo openvas-manage-certs -a
+sudo openvasmd
+sudo gsad
+```
+
+### Step 4: Checking OpenVAS setup
+
+There should be a working OpenVAS setup at this point.
+
+```bash
+sudo openvas-check-setup --v9
+```
+
+If everything looks good, then there should be an admin interface accessible on [http://127.0.0.1](http://127.0.0.1/)
