@@ -12,7 +12,7 @@ Fedora was chosen for this project because it uses mainline Linux kernels that'r
 
 * 2.5A microUSB power supply
 
-* microSD card that's >=8GB
+* >=16GB microSD
 
 * HDMI monitor w/ cable
 
@@ -82,7 +82,7 @@ sudo cp configs/lib/firmware/brcm/brcmfmac43430-sdio.txt /mnt/pwniepi/lib/firmwa
 Fedora's DNF package manager supports custom install roots and specifying architectures. DNF also supports package groups, the most relevant being [security-lab](https://github.com/fabaff/fsl-test-bench/blob/master/fsl.yml). In this case, all relevant packages can be downloaded to DNF's cache stored on the microSD card.
 
 ```bash
-sudo dnf --downloadonly --forcearch=armv7hl --installroot /mnt/pwniepi install @security-lab gnutls-utils openvas-manager openvas-gsa redis tar sqlite
+sudo dnf --downloadonly --forcearch=armv7hl --installroot /mnt/pwniepi install @security-lab bzip2 gnutls-utils openvas-manager openvas-gsa redis tar sqlite
 sudo dnf --downloadonly --forcearch=armv7hl --installroot /mnt/pwniepi update
 ```
 
