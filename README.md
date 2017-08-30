@@ -219,4 +219,4 @@ There should be a working OpenVAS setup at this point.
 sudo openvas-check-setup --v9
 ```
 
-If everything looks good, then there
+If everything looks good, then there should be an admin interface accessible on [http://127.0.0.1](http://127.0.0.1/)
