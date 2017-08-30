@@ -12,7 +12,7 @@ Fedora was chosen for this project because it uses mainline Linux kernels that'r
 
 * 2.5A microUSB power supply
 
-* >=16GB microSD
+* \>=16GB microSD
 
 * HDMI monitor w/ cable
 
