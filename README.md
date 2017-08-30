@@ -125,7 +125,7 @@ Now reload SSH.
 sudo systemctl reload sshd
 ```
 
-Finally, disable SELinux so that OpenVAS can be configured, which should appear like so in /etc/selinux/config`:
+Finally, disable SELinux so that OpenVAS can be configured, which should appear like so in `/etc/selinux/config`:
 
 ```
 SELINUX=disabled
@@ -154,4 +154,12 @@ Redis should be ready to start.
 ```bash
 sudo systemctl enable redis
 sudo systemctl start redis
+```
+
+### Step 2: Update OpenVAS network vulnerability tests
+
+Ensure that OpenVAS keeps an up-to-date collection of NVTs.
+
+```bash
+sudo greenbone-nvt-sync
 ```
