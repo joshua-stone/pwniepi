@@ -219,4 +219,13 @@ There should be a working OpenVAS setup at this point.
 sudo openvas-check-setup --v9
 ```
 
-If everything looks good, then there should be an admin interface accessible on [http://127.0.0.1](http://127.0.0.1/)
+
+If everything looks good, then there should be a web interface accessible on [http://127.0.0.1](http://127.0.0.1/)
+
+Modifying Fedora's firewall rules should make the web interface available for remote access.
+
+```bash
+sudo firewall-cmd --permanent --zone public --add-port 80/tcp --add-port 443/tcp
+sudo firewall-cmd --permanent --zone public --add-service http --add-service https
+sudo firewall-cmd --reload
+```
