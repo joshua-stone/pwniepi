@@ -211,7 +211,7 @@ sudo openvasmd
 sudo gsad
 ```
 
-### Step 4: Checking OpenVAS setup
+### Step 4: Setting up the web interface
 
 There should be a working OpenVAS setup at this point.
 
@@ -219,13 +219,26 @@ There should be a working OpenVAS setup at this point.
 sudo openvas-check-setup --v9
 ```
 
+At this point there should be a web interface accessible on [http://127.0.0.1](http://127.0.0.1/)
 
-If everything looks good, then there should be a web interface accessible on [http://127.0.0.1](http://127.0.0.1/)
-
-Modifying Fedora's firewall rules should make the web interface available for remote access.
+Modifying Fedora's firewall rules will make this web interface available for remote access.
 
 ```bash
 sudo firewall-cmd --permanent --zone public --add-port 80/tcp --add-port 443/tcp
 sudo firewall-cmd --permanent --zone public --add-service http --add-service https
 sudo firewall-cmd --reload
 ```
+
+On a client machine, configure `/etc/hosts` to have this line:
+
+```
+<pwniepi_ip_address>	pwniepi
+```
+
+Trying to access [https://pwniepi:443/](https://pwniepi:443/) will raise an security error, which can be fixed by copying a certificate and importing it into a web browser.
+
+```bash
+scp <user>@pwniepi:/var/lib/openvas/CA/cacert.pem .
+```
+
+The security error should go away once the certificate authority has been imported. If the IP address of the Raspberry Pi changes, then just modify `/etc/hosts` as needed so [https://pwniepi:443/](https://pwniepi:443/) can resolve and start a secure session.
