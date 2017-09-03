@@ -235,10 +235,10 @@ On a client machine, configure `/etc/hosts` to have this line:
 <pwniepi_ip_address>	pwniepi
 ```
 
-Trying to access [https://pwniepi:443/](https://pwniepi:443/) will raise an security error, which can be fixed by copying a certificate and importing it into a web browser.
+Accessing [https://pwniepi:443/](https://pwniepi:443/) will raise a security error, which can be fixed by copying a certificate and importing it into a web browser.
 
 ```bash
 scp <user>@pwniepi:/var/lib/openvas/CA/cacert.pem .
 ```
 
-The security error should go away once the certificate authority has been imported. If the IP address of the Raspberry Pi changes, then just modify `/etc/hosts` as needed so [https://pwniepi:443/](https://pwniepi:443/) can resolve and start a secure session.
+The security error should go away once the certificate authority has been added. If the IP address of the Raspberry Pi changes, then just modify `/etc/hosts` as needed so [https://pwniepi:443/](https://pwniepi:443/) can resolve and start a secure session.
