@@ -219,9 +219,9 @@ There should be a working OpenVAS setup at this point.
 sudo openvas-check-setup --v9
 ```
 
-At this point there should be a there should be a web interface accessible on [http://127.0.0.1](http://127.0.0.1/)
+At this point there should be a web interface accessible on [http://127.0.0.1](http://127.0.0.1/)
 
-Modifying Fedora's firewall rules will make the web interface available for remote access.
+Modifying Fedora's firewall rules will make this web interface available for remote access.
 
 ```bash
 sudo firewall-cmd --permanent --zone public --add-port 80/tcp --add-port 443/tcp
@@ -229,10 +229,10 @@ sudo firewall-cmd --permanent --zone public --add-service http --add-service htt
 sudo firewall-cmd --reload
 ```
 
-One a client machine, configure `/etc/hosts` to have this line:
+On a client machine, configure `/etc/hosts` to have this line:
 
 ```
-PWNIEPI_IP_ADDRESS	pwniepi
+<pwniepi_ip_address>	pwniepi
 ```
 
 Trying to access [https://pwniepi:443/](https://pwniepi:443/) will raise an security error, which can be fixed by copying a certificate and importing it into a web browser.
